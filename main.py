@@ -58,6 +58,8 @@ def BFS(target_x, target_y):
 
     while(not q.empty()):
         current = q.get()
+        if (current.x, current.y) in explored:
+            continue
         explored.add((current.x, current.y))
 
         current_height = abs(land[current.y][current.x]
@@ -98,11 +100,12 @@ def UCS(target_x, target_y):
     start = Node(start_x, start_y, None, 0)
     l = []
     l.append(start)
-    closed = []
+    closed_set = {}
 
     while(len(l)):
-        current = l.pop()
-        closed.append(current)
+        current = min(l, key=lambda x: x.path_cost)
+        l.remove(current)
+        closed_set[(current.x, current.y)] = current
 
         if current.x == target_x and current.y == target_y:
             output(current)
@@ -130,7 +133,6 @@ def UCS(target_x, target_y):
 
             # if no node in open or closed has such state
             open_set = set([(node.x, node.y) for node in l])
-            closed_set = set([(node.x, node.y) for node in closed])
 
             if (next_x, next_y) not in open_set and (next_x, next_y) not in closed_set:
                 l.append(next_node)
@@ -140,12 +142,10 @@ def UCS(target_x, target_y):
                         del(l[i])
                         l.append(next_node)
             elif (next_x, next_y) in closed_set:
-                for i, node in enumerate(closed):
-                    if node.x == next_x and node.y == next_y and next_node.path_cost < node.path_cost:
-                        del(closed[i])
-                        l.append(next_node)
-
-            l.sort(key=lambda x: x.path_cost, reverse=True)
+                node = closed_set[(next_x, next_y)]
+                if next_node.path_cost < node.path_cost:
+                    del(closed_set[(next_x, next_y)])
+                    l.append(next_node)
 
     # return failure
     return False
@@ -158,11 +158,12 @@ def Astar(target_x, target_y):
     start = Node(start_x, start_y, None, 0, h_func(start_x, start_y))
     l = []
     l.append(start)
-    closed = []
+    closed_set = {}
 
     while(len(l)):
-        current = l.pop()
-        closed.append(current)
+        current = min(l, key=lambda x: x.desirability)
+        l.remove(current)
+        closed_set[(current.x, current.y)] = current
 
         if current.x == target_x and current.y == target_y:
             output(current)
@@ -194,7 +195,6 @@ def Astar(target_x, target_y):
 
             # if no node in open or closed has such state
             open_set = set([(node.x, node.y) for node in l])
-            closed_set = set([(node.x, node.y) for node in closed])
 
             if (next_x, next_y) not in open_set and (next_x, next_y) not in closed_set:
                 l.append(next_node)
@@ -204,12 +204,10 @@ def Astar(target_x, target_y):
                         del(l[i])
                         l.append(next_node)
             elif (next_x, next_y) in closed_set:
-                for i, node in enumerate(closed):
-                    if node.x == next_x and node.y == next_y and next_node.desirability < node.desirability:
-                        del(closed[i])
-                        l.append(next_node)
-
-            l.sort(key=lambda x: x.desirability, reverse=True)
+                node = closed_set[(next_x, next_y)]
+                if next_node.desirability < node.desirability:
+                    del(closed_set[(next_x, next_y)])
+                    l.append(next_node)
 
     # return failure
     return False
